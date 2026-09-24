@@ -18,7 +18,7 @@ def getWeather(message):
     res = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={cityForApi}&appid={api}&units=metric')
     data = json.loads(res.text)
 
-    if data['cod'] == '404':
+    if str(data['cod']) == '404':
         bot.send_message(message.chat.id, 'Город не найден, попробуйте ещё раз.')
         return
     else:
@@ -26,16 +26,19 @@ def getWeather(message):
         tempFeelsLike = data['main']['feels_like']
         clouds = data['weather'][0]['description']
 
-        if clouds == 'broken clouds':
-            cloudsForUser = '🌥 Облачно'
-        elif clouds == 'few clouds':
-            cloudsForUser = '⛅️ Переменная облачность'
-        elif clouds == 'clear sky':
-            cloudsForUser = '☀️ Ясно'
-        elif clouds == 'overcast clouds':
-            cloudsForUser = '☁️ Сплошная облачность'
+        weather_emoji = {
+            'clear sky': '☀️ Ясно',
+            'few clouds': '⛅️ Переменная облачность',
+            'scattered clouds': '⛅️ Небольшая облачность',
+            'broken clouds': '🌥 Облачно',
+            'overcast clouds': '☁️ Сплошная облачность',
+            'light rain': '🌦 Небольшой дождь',
+            'moderate rain': '🌧 Дождь',
+            'mist': '🌫 Туман',
+        }
+        cloudsForUser = weather_emoji.get(clouds, f'🌡 {clouds.capitalize()}')
 
-        bot.send_message(message.chat.id, f'Температура в {city} сейчас {round(temp)}℃, ощущается как {round(tempFeelsLike)}℃\n{cloudsForUser}')
+        bot.send_message(message.chat.id, f'Температура в городе {city} сейчас {round(temp)}℃\nОщущается как {round(tempFeelsLike)}℃\n{cloudsForUser}')
 
 
 bot.polling(non_stop=True)
